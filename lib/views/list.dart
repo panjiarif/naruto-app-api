@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:naruto_app/models/anime_model.dart';
+import 'package:naruto_app/models/characters_model.dart' as model;
 import 'package:naruto_app/presenters/anime_presenter.dart';
 import 'package:naruto_app/views/anime_detail.dart';
 
@@ -15,6 +16,7 @@ class _AnimeListScreenState extends State<AnimeListScreen>
   late AnimePresenter _presenter;
   bool _isLoading = false;
   List<Anime> _animeList = [];
+  List<model.Characters> _charactersList = [];
   String? _errorMessage;
   String _currentEndpoint = 'akatsuki';
 
@@ -43,6 +45,13 @@ class _AnimeListScreenState extends State<AnimeListScreen>
   void showAnimeList(List<Anime> animeList) {
     setState(() {
       _animeList = animeList;
+    });
+  }
+
+  @override
+  void showCharactersList(List<model.Characters> charactersList) {
+    setState(() {
+      _charactersList = charactersList;
     });
   }
 
@@ -80,6 +89,11 @@ class _AnimeListScreenState extends State<AnimeListScreen>
                 onPressed: () => fetchData('Kara'),
                 child: Text('Kara'),
               ),
+              SizedBox(width: 10),
+              ElevatedButton(
+                onPressed: () => fetchData('characters'),
+                child: Text('Characters'),
+              ),
             ],
           ),
           Expanded(
@@ -88,27 +102,54 @@ class _AnimeListScreenState extends State<AnimeListScreen>
                   : _errorMessage != null
                       ? Center(child: Text(_errorMessage!))
                       : ListView.builder(
-                          itemCount: _animeList.length,
+                          itemCount: _currentEndpoint == 'characters'
+                              ? _charactersList.length
+                              : _animeList.length,
                           itemBuilder: (context, index) {
-                            final anime = _animeList[index];
-                            return ListTile(
-                              leading: anime.imageUrl.isNotEmpty
-                                  ? Image.network(anime.imageUrl)
-                                  : Image.network(
-                                      'https://placehold.co/600x400'),
-                              title: Text(anime.name),
-                              subtitle: Text("Family ${anime.familyCreator}"),
-                              onTap: () {
-                                print("${anime.name} tapped");
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => DetailScreen(
-                                              id: anime.id,
-                                              endpoint: _currentEndpoint,
-                                            )));
-                              },
-                            );
+                            //untuk character
+                            if (_currentEndpoint == 'characters') {
+                              final character = _charactersList[index];
+                              return ListTile(
+                                leading: character.imageUrl.isNotEmpty
+                                    ? Image.network(character.imageUrl)
+                                    : Image.network(
+                                        'https://placehold.co/600x400'),
+                                title: Text(character.name),
+                                subtitle: Text(
+                                    "Kekkei Genkai ${character.kekeiGenkai}"),
+                                onTap: () {
+                                  print("${character.name} tapped");
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => DetailScreen(
+                                                id: character.id,
+                                                endpoint: _currentEndpoint,
+                                              )));
+                                },
+                              );
+                            } else {
+                              //untuk anime
+                              final anime = _animeList[index];
+                              return ListTile(
+                                leading: anime.imageUrl.isNotEmpty
+                                    ? Image.network(anime.imageUrl)
+                                    : Image.network(
+                                        'https://placehold.co/600x400'),
+                                title: Text(anime.name),
+                                subtitle: Text("Family ${anime.familyCreator}"),
+                                onTap: () {
+                                  print("${anime.name} tapped");
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => DetailScreen(
+                                                id: anime.id,
+                                                endpoint: _currentEndpoint,
+                                              )));
+                                },
+                              );
+                            }
                           },
                         ))
         ],
